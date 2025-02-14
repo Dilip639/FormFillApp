@@ -48,4 +48,11 @@
   <div class="container signin">
     <p>Already have an account? <a href="#">Sign in</a>.</p>
   </div>
-</form>
+</form><style>
+        .container {
+            background-color: #f0f8ff; /* Light blue color */
+            color: #333; /* Dark text color */
+            padding: 20px;
+            border-radius: 10px; /* Rounded corners */
+        }
+    </style>
