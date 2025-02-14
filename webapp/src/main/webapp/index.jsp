@@ -42,8 +42,9 @@
     <br>
 
     <p>By creating an account you agree to our <a href="#">Terms & Privacy</a>.</p>
-    <button type="submit" class="registration">Register</button>
-     <button type="cancel" class="cancellation">Cancel</button>
+   <button type="submit" style="background-color: #4CAF50; color: white;">Register</button>
+<button type="button" style="background-color: #f44336; color: white;">Cancel</button>
+
 
   </div>
 
