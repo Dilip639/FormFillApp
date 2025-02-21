@@ -37,7 +37,7 @@
 
 <form action="action_page.php">
     <div class="container">
-	    <h1>> Student Registration!</h1>
+	    <h1> Student Registration!</h1>
         <p>Please fill in this form!</p>
         <hr>
         <br>
@@ -90,22 +90,23 @@
 
 <script>
     document.querySelectorAll('input').forEach(input => {
-        input.addEventListener('focus', (event) => {
-            event.target.style.backgroundColor = '#e6f7ff';
-        });
-        input.addEventListener('blur', (event) => {
-            event.target.style.backgroundColor = '';
-        });
+    input.addEventListener('focus', (event) => {
+        event.target.style.backgroundColor = '#e6f7ff';
     });
+    input.addEventListener('blur', (event) => {
+        event.target.style.backgroundColor = '';
+    });
+});
 
-    document.querySelectorAll('button').forEach(button => {
-        button.addEventListener('mouseover', (event) => {
-            event.target.style.opacity = '0.8';
-        });
-        button.addEventListener('mouseout', (event) => {
-            event.target.style.opacity = '1';
-        });
+document.querySelectorAll('button').forEach(button => {
+    button.addEventListener('mouseover', (event) => {
+        event.target.style.opacity = '0.8';
     });
+    button.addEventListener('mouseout', (event) => {
+        event.target.style.opacity = '1';
+    });
+});
+
 </script>
 
 </body>
