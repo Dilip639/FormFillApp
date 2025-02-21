@@ -31,6 +31,9 @@
             border-radius: 4px;
             cursor: pointer;
         }
+	input, button {
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -87,25 +90,27 @@
         <p>Already have an account? <a href="#">Sign in</a>.</p>
     </div>
 </form>
-
+<input type="text" placeholder="Focus on me!">
+    <button>Hover over me!</button>
 <script>
-    document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('focus', (event) => {
-        event.target.style.backgroundColor = '#e6f7ff';
-    });
-    input.addEventListener('blur', (event) => {
-        event.target.style.backgroundColor = '';
-    });
-});
 
-document.querySelectorAll('button').forEach(button => {
-    button.addEventListener('mouseover', (event) => {
-        event.target.style.opacity = '0.8';
-    });
-    button.addEventListener('mouseout', (event) => {
-        event.target.style.opacity = '1';
-    });
-});
+    document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', (event) => {
+                event.target.style.backgroundColor = '#e6f7ff';
+            });
+            input.addEventListener('blur', (event) => {
+                event.target.style.backgroundColor = '';
+            });
+        });
+
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mouseover', (event) => {
+                event.target.style.opacity = '0.8';
+            });
+            button.addEventListener('mouseout', (event) => {
+                event.target.style.opacity = '1';
+            });
+        });
 
 </script>
 
