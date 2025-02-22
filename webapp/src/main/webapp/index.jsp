@@ -90,8 +90,7 @@
         <p>Already have an account? <a href="#">Sign in</a>.</p>
     </div>
 </form>
-<input type="text" placeholder="Focus on me!">
-    <button>Hover over me!</button>
+
     <script>
     // Add focus and blur event listeners to input elements
     document.querySelectorAll('input').forEach(input => {
