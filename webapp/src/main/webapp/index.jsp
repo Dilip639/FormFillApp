@@ -92,27 +92,32 @@
 </form>
 <input type="text" placeholder="Focus on me!">
     <button>Hover over me!</button>
-<script>
-
+    <script>
+    // Add focus and blur event listeners to input elements
     document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('focus', (event) => {
-                event.target.style.backgroundColor = '#e6f7ff';
-            });
-            input.addEventListener('blur', (event) => {
-                event.target.style.backgroundColor = '';
-            });
+        input.addEventListener('focus', event => {
+            event.target.style.backgroundColor = '#e6f7ff';
+            event.target.style.borderColor = '#3399ff';
         });
-
-        document.querySelectorAll('button').forEach(button => {
-            button.addEventListener('mouseover', (event) => {
-                event.target.style.opacity = '0.8';
-            });
-            button.addEventListener('mouseout', (event) => {
-                event.target.style.opacity = '1';
-            });
+        input.addEventListener('blur', event => {
+            event.target.style.backgroundColor = '';
+            event.target.style.borderColor = '';
         });
+    });
 
+    // Add mouseover and mouseout event listeners to button elements
+    document.querySelectorAll('button').forEach(button => {
+        button.addEventListener('mouseover', event => {
+            event.target.style.opacity = '0.8';
+            event.target.style.transform = 'scale(1.05)';
+        });
+        button.addEventListener('mouseout', event => {
+            event.target.style.opacity = '1';
+            event.target.style.transform = 'scale(1)';
+        });
+    });
 </script>
+
 
 </body>
 </html>
