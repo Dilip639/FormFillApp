@@ -10,7 +10,7 @@
     <div class="invitation-container">
         <h1>You're Invited!</h1>
         <p>Join us for the wedding of</p>
-        <h2>Suresh Weds Padmini</h2>
+        <h2>Suresh & Padmini</h2>
         <p>on</p>
         <p class="date">April 20, 2025</p>
         <p>at</p>
