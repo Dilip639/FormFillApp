@@ -10,11 +10,11 @@
     <div class="invitation-container">
         <h1>You're Invited!</h1>
         <p>Join us for the wedding of</p>
-        <h2>John & Jane</h2>
+        <h2>Suresh Weds Padmini</h2>
         <p>on</p>
-        <p class="date">April 23, 2025</p>
+        <p class="date">April 20, 2025</p>
         <p>at</p>
-        <p class="location">The Grand Venue, Cityville</p>
+        <p class="location">The Grand Venue, Sangareddy</p>
         <button onclick="RSVP()">RSVP</button>
         <p id="rsvp-message"></p>
     </div>
