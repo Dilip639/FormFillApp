@@ -6,42 +6,60 @@
     <title>E-Commerce Website</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             text-align: center;
-            background: url('https://source.unsplash.com/1600x900/?shopping,mall') no-repeat center center/cover;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
             color: white;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 20px;
         }
         .categories {
             margin: 20px;
         }
         .category-btn {
-            padding: 10px 20px;
-            margin: 5px;
+            padding: 12px 24px;
+            margin: 8px;
             border: none;
-            background-color: #007BFF;
+            background-color: #ff9800;
             color: white;
+            font-size: 16px;
             cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s, transform 0.2s;
         }
         .category-btn:hover {
-            background-color: #0056b3;
+            background-color: #e68900;
+            transform: scale(1.1);
         }
         .products {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            padding: 20px;
         }
         .product {
             display: none;
-            border: 1px solid #ddd;
-            margin: 10px;
-            padding: 10px;
-            width: 200px;
+            border-radius: 10px;
+            margin: 15px;
+            padding: 15px;
+            width: 250px;
             text-align: center;
+            background: white;
+            color: black;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        .product:hover {
+            transform: scale(1.05);
         }
         .product img {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             object-fit: cover;
+            border-radius: 8px;
         }
         .show {
             display: block;
@@ -49,7 +67,7 @@
     </style>
 </head>
 <body>
-    <h1>E-Commerce Store</h1>
+    <h1>Welcome to Our E-Commerce Store</h1>
     
     <div class="categories">
         <button class="category-btn" onclick="filterProducts('all')">All</button>
@@ -60,27 +78,27 @@
     
     <div class="products">
         <div class="product electronics show">
-            <img src="https://i.postimg.cc/t48666jY/mini-smartphone-android-7.webp" alt="Smartphone">
+            <img src="https://source.unsplash.com/120x120/?smartphone" alt="Smartphone">
             <p>Smartphone</p>
         </div>
         <div class="product electronics show">
-            <img src="https://via.placeholder.com/100" alt="Laptop">
+            <img src="https://source.unsplash.com/120x120/?laptop" alt="Laptop">
             <p>Laptop</p>
         </div>
         <div class="product clothing show">
-            <img src="https://via.placeholder.com/100" alt="T-Shirt">
+            <img src="https://source.unsplash.com/120x120/?tshirt" alt="T-Shirt">
             <p>T-Shirt</p>
         </div>
         <div class="product clothing show">
-            <img src="https://via.placeholder.com/100" alt="Jeans">
+            <img src="https://source.unsplash.com/120x120/?jeans" alt="Jeans">
             <p>Jeans</p>
         </div>
         <div class="product home show">
-            <img src="https://via.placeholder.com/100" alt="Sofa">
+            <img src="https://source.unsplash.com/120x120/?sofa" alt="Sofa">
             <p>Sofa</p>
         </div>
         <div class="product home show">
-            <img src="https://via.placeholder.com/100" alt="Table Lamp">
+            <img src="https://source.unsplash.com/120x120/?lamp" alt="Table Lamp">
             <p>Table Lamp</p>
         </div>
     </div>
