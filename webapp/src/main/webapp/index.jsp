@@ -78,27 +78,27 @@
     
     <div class="products">
         <div class="product electronics show">
-            <img src="https://source.unsplash.com/120x120/?smartphone" alt="Smartphone">
+            <img src="https://i.postimg.cc/t48666jY/mini-smartphone-android-7.webp" alt="Smartphone">
             <p>Smartphone</p>
         </div>
         <div class="product electronics show">
-            <img src="https://source.unsplash.com/120x120/?laptop" alt="Laptop">
+            <img src="https://i.postimg.cc/zDhSx1NP/4-65e28377-a245-4b2d-b59a-9a4d1d88d331.jpg" alt="Laptop">
             <p>Laptop</p>
         </div>
         <div class="product clothing show">
-            <img src="https://source.unsplash.com/120x120/?tshirt" alt="T-Shirt">
+            <img src="https://i.postimg.cc/d1wk6gjg/fashion-journal-buying-new-clothes-mob.jpg" alt="T-Shirt">
             <p>T-Shirt</p>
         </div>
         <div class="product clothing show">
-            <img src="https://source.unsplash.com/120x120/?jeans" alt="Jeans">
+            <img src="https://i.postimg.cc/tCNXt7MR/compress-0421-cpdnm-azure-1.jpg" alt="Jeans">
             <p>Jeans</p>
         </div>
         <div class="product home show">
-            <img src="https://source.unsplash.com/120x120/?sofa" alt="Sofa">
+            <img src="https://i.postimg.cc/MT24FmnC/Gallery-1-Chiyo-L-Shaped-Sofa-Buy-Online.jpg" alt="Sofa">
             <p>Sofa</p>
         </div>
         <div class="product home show">
-            <img src="https://source.unsplash.com/120x120/?lamp" alt="Table Lamp">
+            <img src="https://i.postimg.cc/zXsnWt4Y/tl73-10003-3.jpg" alt="Table Lamp">
             <p>Table Lamp</p>
         </div>
     </div>
