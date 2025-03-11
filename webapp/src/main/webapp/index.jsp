@@ -34,6 +34,12 @@
             margin: 10px;
             padding: 10px;
             width: 200px;
+            text-align: center;
+        }
+        .product img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
         }
         .show {
             display: block;
@@ -51,12 +57,30 @@
     </div>
     
     <div class="products">
-        <div class="product electronics show">Smartphone</div>
-        <div class="product electronics show">Laptop</div>
-        <div class="product clothing show">T-Shirt</div>
-        <div class="product clothing show">Jeans</div>
-        <div class="product home show">Sofa</div>
-        <div class="product home show">Table Lamp</div>
+        <div class="product electronics show">
+            <img src="https://via.placeholder.com/100" alt="Smartphone">
+            <p>Smartphone</p>
+        </div>
+        <div class="product electronics show">
+            <img src="https://via.placeholder.com/100" alt="Laptop">
+            <p>Laptop</p>
+        </div>
+        <div class="product clothing show">
+            <img src="https://via.placeholder.com/100" alt="T-Shirt">
+            <p>T-Shirt</p>
+        </div>
+        <div class="product clothing show">
+            <img src="https://via.placeholder.com/100" alt="Jeans">
+            <p>Jeans</p>
+        </div>
+        <div class="product home show">
+            <img src="https://via.placeholder.com/100" alt="Sofa">
+            <p>Sofa</p>
+        </div>
+        <div class="product home show">
+            <img src="https://via.placeholder.com/100" alt="Table Lamp">
+            <p>Table Lamp</p>
+        </div>
     </div>
 
     <script>
