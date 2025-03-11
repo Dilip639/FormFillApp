@@ -3,82 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wedding Invitation</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>E-Commerce Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .categories {
+            margin: 20px;
+        }
+        .category-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        .category-btn:hover {
+            background-color: #0056b3;
+        }
+        .products {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .product {
+            display: none;
+            border: 1px solid #ddd;
+            margin: 10px;
+            padding: 10px;
+            width: 200px;
+        }
+        .show {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-    <div class="invitation-container">
-        <h1>You're Invited!</h1>
-        <p>Join us for the wedding of</p>
-        <h2>Suresh & Padmini</h2>
-        <p>on</p>
-        <p class="date">April 20, 2025</p>
-        <p>at</p>
-        <p class="location">The Grand Venue, Sangareddy</p>
-        <button onclick="RSVP()">RSVP</button>
-        <p id="rsvp-message"></p>
+    <h1>E-Commerce Store</h1>
+    
+    <div class="categories">
+        <button class="category-btn" onclick="filterProducts('all')">All</button>
+        <button class="category-btn" onclick="filterProducts('electronics')">Electronics</button>
+        <button class="category-btn" onclick="filterProducts('clothing')">Clothing</button>
+        <button class="category-btn" onclick="filterProducts('home')">Home</button>
     </div>
-    <script src="script.js"></script>
+    
+    <div class="products">
+        <div class="product electronics show">Smartphone</div>
+        <div class="product electronics show">Laptop</div>
+        <div class="product clothing show">T-Shirt</div>
+        <div class="product clothing show">Jeans</div>
+        <div class="product home show">Sofa</div>
+        <div class="product home show">Table Lamp</div>
+    </div>
+
+    <script>
+        function filterProducts(category) {
+            let products = document.querySelectorAll('.product');
+            products.forEach(product => {
+                product.classList.remove('show');
+                if (category === 'all' || product.classList.contains(category)) {
+                    product.classList.add('show');
+                }
+            });
+        }
+    </script>
 </body>
-<style>
-body {
-    font-family: 'Arial, sans-serif';
-    background-color: #f0f8ff;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-.invitation-container {
-    text-align: center;
-    background-color: #fff;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
-    color: #d23669;
-    font-size: 2.5rem;
-}
-
-h2 {
-    color: #4a4a4a;
-    font-size: 2rem;
-}
-
-p {
-    color: #606060;
-    margin: 0.5rem 0;
-}
-
-.date, .location {
-    font-weight: bold;
-}
-
-button {
-    margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    background-color: #d23669;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #b52b53;
-}
-
-#rsvp-message {
-    margin-top: 1rem;
-    color: #28a745;
-}
-</style>
-<script>function RSVP() {
-    document.getElementById('rsvp-message').innerText = "Thank you for your RSVP!";
-}
-</script>
 </html>
