@@ -23,7 +23,7 @@
             padding: 12px 24px;
             margin: 8px;
             border: none;
-            background-color: #ff9800;
+            background-color: #0066FF;
             color: white;
             font-size: 16px;
             cursor: pointer;
