@@ -58,7 +58,7 @@
     
     <div class="products">
         <div class="product electronics show">
-            <img src="https://via.placeholder.com/100" alt="Smartphone">
+            <img src="https://i.postimg.cc/t48666jY/mini-smartphone-android-7.webp" alt="Smartphone">
             <p>Smartphone</p>
         </div>
         <div class="product electronics show">
