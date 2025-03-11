@@ -8,6 +8,8 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            background: url('https://source.unsplash.com/1600x900/?shopping,mall') no-repeat center center/cover;
+            color: white;
         }
         .categories {
             margin: 20px;
