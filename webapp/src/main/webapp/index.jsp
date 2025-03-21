@@ -8,7 +8,7 @@
   </head>
   <body>
     <form class="user-form" id="form">
-      <input type="text" id="search" placeholder="Search a Github User">
+      <input type="text" id="search" placeholder="Find a Github User">
     </form>
 
     <main id="main"></main>
