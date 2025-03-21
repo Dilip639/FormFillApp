@@ -1,173 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Commerce Website</title>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            text-align: center;
-            background: linear-gradient(to right, #ff7e5f, #feb47b);
-            color: white;
-            margin: 0;
-            padding: 0;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Github Profiles</title>
+  </head>
+  <body>
+    <form class="user-form" id="form">
+      <input type="text" id="search" placeholder="Search a Github User">
+    </form>
+
+    <main id="main"></main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.min.js" integrity="sha512-DZqqY3PiOvTP9HkjIWgjO6ouCbq+dxqWoJZ/Q+zPYNHmlnI2dQnbJ5bxAHpAMw+LXRm4D72EIRXzvcHQtE8/VQ==" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+  </body>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;400&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #2a2a72;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+}
+
+.user-form {
+  width: 100%;
+  max-width: 700px;
+}
+
+.user-form input {
+  width: 100%;
+  display: block;
+  background-color: #4c2885;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  font-family: inherit;
+  font-size: 1rem;
+  box-shadow: 0 5px 10px rgba(154, 160, 185, 0.05),
+    0 15px 40px rgba(0, 0, 0, 0.1);
+}
+
+.user-form input::placeholder {
+  color: #bbb;
+}
+
+.user-form input:focus {
+  outline: none;
+}
+
+.card {
+  max-width: 800px;
+  background-color: #4c2885;
+  border-radius: 20px;
+  box-shadow: 0 5px 10px rgba(154, 160, 185, 0.05),
+    0 15px 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  padding: 3rem;
+  margin: 0 1.5rem;
+}
+
+.avatar {
+  border-radius: 50%;
+  border: 10px solid #2a2a72;
+  height: 150px;
+  width: 150px;
+}
+
+.user-info {
+  color: #eee;
+  margin-left: 2rem;
+}
+
+.user-info h2 {
+  margin-top: 0;
+}
+
+.user-info ul {
+  list-style-type: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+  max-width: 400px;
+}
+
+.user-info ul li {
+  display: flex;
+  align-items: center;
+}
+
+.user-info ul li strong {
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
+
+.repo {
+  text-decoration: none;
+  color: #fff;
+  background-color: #212a72;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+@media (max-width: 500px) {
+  .card {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .user-form {
+    max-width: 400px;
+  }
+}
+
+  </style>
+  <script>
+    const APIURL = 'https://api.github.com/users/'
+
+const main = document.getElementById('main')
+const form = document.getElementById('form')
+const search = document.getElementById('search')
+
+async function getUser(username) {
+    try {
+        const { data } = await axios(APIURL + username)
+
+        createUserCard(data)
+        getRepos(username)
+    } catch(err) {
+        if(err.response.status == 404) {
+            createErrorCard('No profile with this username')
         }
-        h1 {
-            margin-top: 20px;
-        }
-        .categories {
-            margin: 20px;
-        }
-        .category-btn {
-            padding: 12px 24px;
-            margin: 8px;
-            border: none;
-            background-color: #0066FF;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background 0.3s, transform 0.2s;
-        }
-        .category-btn:hover {
-            background-color: #e68900;
-            transform: scale(1.1);
-        }
-        .products {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 20px;
-        }
-        .product {
-            display: none;
-            border-radius: 10px;
-            margin: 15px;
-            padding: 15px;
-            width: 250px;
-            text-align: center;
-            background: white;
-            color: black;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s;
-            position: relative;
-        }
-        .product:hover {
-            transform: scale(1.05);
-        }
-        .product img {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .add-to-cart {
-            margin-top: 10px;
-            padding: 8px 16px;
-            border: none;
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        .add-to-cart:hover {
-            background-color: #218838;
-        }
-        .cart {
-            margin-top: 20px;
-            padding: 20px;
-            background: white;
-            color: black;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            display: inline-block;
-        }
-        .show {
-            display: block;
-        }
-    </style>
-</head>
-<body>
-    <h1>Welcome to Our E-Commerce Store</h1>
+    }
+}
+
+async function getRepos(username) {
+    try {
+        const { data } = await axios(APIURL + username + '/repos?sort=created')
+
+        addReposToCard(data)
+    } catch(err) {
+        createErrorCard('Problem fetching repos')
+    }
+}
+
+function createUserCard(user) {
+    const userID = user.name || user.login
+    const userBio = user.bio ? `<p>${user.bio}</p>` : ''
+    const cardHTML = `
+    <div class="card">
+    <div>
+      <img src="${user.avatar_url}" alt="${user.name}" class="avatar">
+    </div>
+    <div class="user-info">
+      <h2>${userID}</h2>
+      ${userBio}
+      <ul>
+        <li>${user.followers} <strong>Followers</strong></li>
+        <li>${user.following} <strong>Following</strong></li>
+        <li>${user.public_repos} <strong>Repos</strong></li>
+      </ul>
+
+      <div id="repos"></div>
+    </div>
+  </div>
+    `
+    main.innerHTML = cardHTML
     
-    <div class="categories">
-        <button class="category-btn" onclick="filterProducts('all')">All</button>
-        <button class="category-btn" onclick="filterProducts('electronics')">Electronics</button>
-        <button class="category-btn" onclick="filterProducts('clothing')">Clothing</button>
-        <button class="category-btn" onclick="filterProducts('home')">Home</button>
-    </div>
-    
-    <div class="products">
-        <div class="product electronics show">
-            <img src="https://i.postimg.cc/t48666jY/mini-smartphone-android-7.webp" alt="Smartphone">
-            <p>Smartphone - $699</p>
-            <button class="add-to-cart" onclick="addToCart('Smartphone', 699)">Add to Cart</button>
-        </div>
-        <div class="product electronics show">
-            <img src="https://i.postimg.cc/zDhSx1NP/4-65e28377-a245-4b2d-b59a-9a4d1d88d331.jpg" alt="Laptop">
-            <p>Laptop - $999</p>
-            <button class="add-to-cart" onclick="addToCart('Laptop', 999)">Add to Cart</button>
-        </div>
-        <div class="product clothing show">
-            <img src="https://i.postimg.cc/d1wk6gjg/fashion-journal-buying-new-clothes-mob.jpg" alt="T-Shirt">
-            <p>T-Shirt - $25</p>
-            <button class="add-to-cart" onclick="addToCart('T-Shirt', 25)">Add to Cart</button>
-        </div>
-        <div class="product clothing show">
-            <img src="https://i.postimg.cc/tCNXt7MR/compress-0421-cpdnm-azure-1.jpg" alt="Jeans">
-            <p>Jeans - $50</p>
-            <button class="add-to-cart" onclick="addToCart('Jeans', 50)">Add to Cart</button>
-        </div>
-        <div class="product home show">
-            <img src="https://i.postimg.cc/MT24FmnC/Gallery-1-Chiyo-L-Shaped-Sofa-Buy-Online.jpg" alt="Sofa">
-            <p>Sofa - $499</p>
-            <button class="add-to-cart" onclick="addToCart('Sofa', 499)">Add to Cart</button>
-        </div>
-        <div class="product home show">
-            <img src="https://i.postimg.cc/zXsnWt4Y/tl73-10003-3.jpg" alt="Table Lamp">
-            <p>Table Lamp - $30</p>
-            <button class="add-to-cart" onclick="addToCart('Table Lamp', 30)">Add to Cart</button>
-        </div>
-    </div>
+}
 
-    <div class="cart">
-        <h2>Shopping Cart</h2>
-        <ul id="cart-items"></ul>
-        <p>Total: $<span id="total-price">0</span></p>
-    </div>
+function createErrorCard(msg) {
+    const cardHTML = `
+        <div class="card">
+            <h1>${msg}</h1>
+        </div>
+    `
 
-    <script>
-        function filterProducts(category) {
-            let products = document.querySelectorAll('.product');
-            products.forEach(product => {
-                product.classList.remove('show');
-                if (category === 'all' || product.classList.contains(category)) {
-                    product.classList.add('show');
-                }
-            });
-        }
+    main.innerHTML = cardHTML
+}
 
-        let cart = [];
-        function addToCart(productName, price) {
-            cart.push({ name: productName, price: price });
-            updateCart();
-        }
+function addReposToCard(repos) {
+    const reposEl = document.getElementById('repos')
 
-        function updateCart() {
-            let cartList = document.getElementById('cart-items');
-            let totalPrice = document.getElementById('total-price');
-            cartList.innerHTML = '';
-            let total = 0;
-            cart.forEach(item => {
-                let li = document.createElement('li');
-                li.textContent = `${item.name} - $${item.price}`;
-                cartList.appendChild(li);
-                total += item.price;
-            });
-            totalPrice.textContent = total;
-        }
-    </script>
-</body>
+    repos
+        .slice(0, 5)
+        .forEach(repo => {
+            const repoEl = document.createElement('a')
+            repoEl.classList.add('repo')
+            repoEl.href = repo.html_url
+            repoEl.target = '_blank'
+            repoEl.innerText = repo.name
+
+            reposEl.appendChild(repoEl)
+        })
+}
+
+form.addEventListener('submit', (e) => {
+    e.preventDefault()
+
+    const user = search.value
+
+    if(user) {
+        getUser(user)
+
+        search.value = ''
+    }
+})
+
+
+  </script>
 </html>
