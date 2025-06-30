@@ -1,256 +1,602 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import FormFieldsPanel from './FormFieldsPanel';
-import FormPreview from './FormPreview';
-import FormDataPreview from './FormDataPreview';
-import JSPExporter from './JSPExporter';
-import { Plus, Eye, Code2, Download } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
 
-export interface FormField {
-  id: string;
-  type: 'text' | 'email' | 'number' | 'password' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'date' | 'file';
-  label: string;
-  name: string;
-  placeholder?: string;
-  required: boolean;
-  options?: string[];
-  validation?: {
-    min?: number;
-    max?: number;
-    pattern?: string;
-    message?: string;
-  };
-}
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.*" %>
+<%
+    // Game logic variables
+    int[][] board = new int[4][4];
+    int score = 0;
+    boolean gameOver = false;
+    boolean won = false;
+    String message = "";
+    
+    // Get session attributes
+    int[][] sessionBoard = (int[][]) session.getAttribute("board");
+    Integer sessionScore = (Integer) session.getAttribute("score");
+    Boolean sessionGameOver = (Boolean) session.getAttribute("gameOver");
+    Boolean sessionWon = (Boolean) session.getAttribute("won");
+    
+    String action = request.getParameter("action");
+    String direction = request.getParameter("direction");
+    
+    // Initialize new game
+    if ("newGame".equals(action) || sessionBoard == null) {
+        board = new int[4][4];
+        score = 0;
+        gameOver = false;
+        won = false;
+        addRandomTile(board);
+        addRandomTile(board);
+        message = "New game started! Use arrow keys or buttons to move tiles.";
+    } else {
+        // Load existing game state
+        board = sessionBoard;
+        score = sessionScore != null ? sessionScore : 0;
+        gameOver = sessionGameOver != null ? sessionGameOver : false;
+        won = sessionWon != null ? sessionWon : false;
+    }
+    
+    // Process move
+    if (direction != null && !gameOver) {
+        int[][] newBoard = copyBoard(board);
+        int oldScore = score;
+        
+        switch (direction) {
+            case "up":
+                moveUp(newBoard);
+                break;
+            case "down":
+                moveDown(newBoard);
+                break;
+            case "left":
+                moveLeft(newBoard);
+                break;
+            case "right":
+                moveRight(newBoard);
+                break;
+        }
+        
+        // Check if move was valid
+        if (!boardsEqual(board, newBoard)) {
+            board = newBoard;
+            addRandomTile(board);
+            
+            // Check for 2048 tile
+            if (!won && has2048(board)) {
+                won = true;
+                message = "🎉 Congratulations! You reached 2048!";
+            }
+            
+            // Check game over
+            if (isGameOver(board)) {
+                gameOver = true;
+                message = "Game Over! No more moves available.";
+            }
+        }
+    }
+    
+    // Save game state
+    session.setAttribute("board", board);
+    session.setAttribute("score", score);
+    session.setAttribute("gameOver", gameOver);
+    session.setAttribute("won", won);
+    
+    // Helper methods
+    %>
+    
+    <%!
+    private void addRandomTile(int[][] board) {
+        List<int[]> emptyCells = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (board[i][j] == 0) {
+                    emptyCells.add(new int[]{i, j});
+                }
+            }
+        }
+        
+        if (!emptyCells.isEmpty()) {
+            Random rand = new Random();
+            int[] cell = emptyCells.get(rand.nextInt(emptyCells.size()));
+            board[cell[0]][cell[1]] = rand.nextDouble() < 0.9 ? 2 : 4;
+        }
+    }
+    
+    private int[][] copyBoard(int[][] board) {
+        int[][] copy = new int[4][4];
+        for (int i = 0; i < 4; i++) {
+            System.arraycopy(board[i], 0, copy[i], 0, 4);
+        }
+        return copy;
+    }
+    
+    private boolean boardsEqual(int[][] board1, int[][] board2) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (board1[i][j] != board2[i][j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    private void moveLeft(int[][] board) {
+        for (int i = 0; i < 4; i++) {
+            int[] row = board[i];
+            int[] newRow = new int[4];
+            int pos = 0;
+            
+            // Move non-zero tiles to the left
+            for (int j = 0; j < 4; j++) {
+                if (row[j] != 0) {
+                    newRow[pos++] = row[j];
+                }
+            }
+            
+            // Merge adjacent equal tiles
+            for (int j = 0; j < 3; j++) {
+                if (newRow[j] != 0 && newRow[j] == newRow[j + 1]) {
+                    newRow[j] *= 2;
+                    newRow[j + 1] = 0;
+                }
+            }
+            
+            // Move merged tiles to the left again
+            int[] finalRow = new int[4];
+            pos = 0;
+            for (int j = 0; j < 4; j++) {
+                if (newRow[j] != 0) {
+                    finalRow[pos++] = newRow[j];
+                }
+            }
+            
+            board[i] = finalRow;
+        }
+    }
+    
+    private void moveRight(int[][] board) {
+        // Reverse, move left, reverse again
+        reverseRows(board);
+        moveLeft(board);
+        reverseRows(board);
+    }
+    
+    private void moveUp(int[][] board) {
+        transpose(board);
+        moveLeft(board);
+        transpose(board);
+    }
+    
+    private void moveDown(int[][] board) {
+        transpose(board);
+        reverseRows(board);
+        moveLeft(board);
+        reverseRows(board);
+        transpose(board);
+    }
+    
+    private void transpose(int[][] board) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = i + 1; j < 4; j++) {
+                int temp = board[i][j];
+                board[i][j] = board[j][i];
+                board[j][i] = temp;
+            }
+        }
+    }
+    
+    private void reverseRows(int[][] board) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 2; j++) {
+                int temp = board[i][j];
+                board[i][j] = board[i][3 - j];
+                board[i][3 - j] = temp;
+            }
+        }
+    }
+    
+    private boolean has2048(int[][] board) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (board[i][j] == 2048) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private boolean isGameOver(int[][] board) {
+        // Check for empty cells
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (board[i][j] == 0) {
+                    return false;
+                }
+            }
+        }
+        
+        // Check for possible merges
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                int current = board[i][j];
+                if ((i > 0 && board[i-1][j] == current) ||
+                    (i < 3 && board[i+1][j] == current) ||
+                    (j > 0 && board[i][j-1] == current) ||
+                    (j < 3 && board[i][j+1] == current)) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    private String getTileColor(int value) {
+        switch (value) {
+            case 2: return "#eee4da";
+            case 4: return "#ede0c8";
+            case 8: return "#f2b179";
+            case 16: return "#f59563";
+            case 32: return "#f67c5f";
+            case 64: return "#f65e3b";
+            case 128: return "#edcf72";
+            case 256: return "#edcc61";
+            case 512: return "#edc850";
+            case 1024: return "#edc53f";
+            case 2048: return "#edc22e";
+            default: return "#3c3a32";
+        }
+    }
+    
+    private String getTextColor(int value) {
+        return value <= 4 ? "#776e65" : "#f9f6f2";
+    }
+    %>
 
-const FormBuilder = () => {
-  const [formFields, setFormFields] = useState<FormField[]>([]);
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [formName, setFormName] = useState('MyForm');
-  const [activeTab, setActiveTab] = useState('builder');
-
-  const addField = (field: Omit<FormField, 'id'>) => {
-    const newField: FormField = {
-      ...field,
-      id: `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    };
-    setFormFields([...formFields, newField]);
-    toast({
-      title: "Field Added",
-      description: `${field.label} field has been added to your form.`,
-    });
-  };
-
-  const removeField = (id: string) => {
-    setFormFields(formFields.filter(field => field.id !== id));
-    const newFormData = { ...formData };
-    delete newFormData[id];
-    setFormData(newFormData);
-    toast({
-      title: "Field Removed",
-      description: "Field has been removed from your form.",
-    });
-  };
-
-  const updateField = (id: string, updates: Partial<FormField>) => {
-    setFormFields(formFields.map(field => 
-      field.id === id ? { ...field, ...updates } : field
-    ));
-  };
-
-  const handleFormDataChange = (fieldId: string, value: any) => {
-    setFormData({ ...formData, [fieldId]: value });
-  };
-
-  useEffect(() => {
-    console.log('Form data updated:', formData);
-  }, [formData]);
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2">
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl">Form Builder</CardTitle>
-                <div className="flex items-center space-x-2 mt-2">
-                  <Input
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    className="bg-white/20 border-white/30 text-white placeholder-white/70 max-w-xs"
-                    placeholder="Form Name"
-                  />
-                  <Badge variant="secondary" className="bg-white/20 text-white">
-                    {formFields.length} fields
-                  </Badge>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #faf8ef 0%, #f2e6d9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            background: #bbada0;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .game-header h1 {
+            color: #776e65;
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .score-box {
+            background: #bbada0;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .score-box .label {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .score-box .value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .game-board {
+            background: #bbada0;
+            border-radius: 10px;
+            padding: 10px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .board-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .board-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .tile {
+            width: 80px;
+            height: 80px;
+            background: #cdc1b4;
+            border-radius: 5px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            transition: all 0.15s ease-in-out;
+        }
+        
+        .tile:last-child {
+            margin-right: 0;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            padding: 15px 20px;
+            background: #8f7a66;
+            color: #f9f6f2;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.15s ease-in-out;
+            min-width: 60px;
+        }
+        
+        .control-btn:hover {
+            background: #9f8a76;
+        }
+        
+        .control-btn:active {
+            background: #7f6a56;
+        }
+        
+        .new-game-btn {
+            width: 100%;
+            padding: 15px;
+            background: #f67c5f;
+            color: #f9f6f2;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.15s ease-in-out;
+        }
+        
+        .new-game-btn:hover {
+            background: #f68c6f;
+        }
+        
+        .message {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .message.success {
+            background: #edf7ed;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+        
+        .message.error {
+            background: #fdeaea;
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+        
+        .message.info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 2px solid #2196f3;
+        }
+        
+        .instructions {
+            background: #f9f6f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: #776e65;
+            margin-bottom: 10px;
+        }
+        
+        .instructions p {
+            color: #776e65;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 480px) {
+            .tile {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5em;
+            }
+            
+            .game-header h1 {
+                font-size: 2em;
+            }
+            
+            .control-btn {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>2048</h1>
+        </div>
+        
+        <div class="game-info">
+            <div class="score-box">
+                <div class="label">Score</div>
+                <div class="value"><%= score %></div>
+            </div>
+            <div class="score-box">
+                <div class="label">Best</div>
+                <div class="value">0</div>
+            </div>
+        </div>
+        
+        <% if (!message.isEmpty()) { %>
+        <div class="message <%= won ? "success" : (gameOver ? "error" : "info") %>">
+            <%= message %>
+        </div>
+        <% } %>
+        
+        <div class="game-board">
+            <% for (int i = 0; i < 4; i++) { %>
+            <div class="board-row">
+                <% for (int j = 0; j < 4; j++) { %>
+                <div class="tile" style="background-color: <%= getTileColor(board[i][j]) %>; color: <%= getTextColor(board[i][j]) %>;">
+                    <%= board[i][j] == 0 ? "" : board[i][j] %>
                 </div>
-              </div>
-              <Plus className="h-8 w-8 opacity-70" />
+                <% } %>
             </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6">
-                <TabsTrigger value="builder" className="flex items-center space-x-2">
-                  <Plus className="h-4 w-4" />
-                  <span>Builder</span>
-                </TabsTrigger>
-                <TabsTrigger value="preview" className="flex items-center space-x-2">
-                  <Eye className="h-4 w-4" />
-                  <span>Preview</span>
-                </TabsTrigger>
-                <TabsTrigger value="data" className="flex items-center space-x-2">
-                  <Code2 className="h-4 w-4" />
-                  <span>Data</span>
-                </TabsTrigger>
-                <TabsTrigger value="export" className="flex items-center space-x-2">
-                  <Download className="h-4 w-4" />
-                  <span>JSP Export</span>
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="builder" className="space-y-6">
-                <FormFieldsPanel onAddField={addField} />
-                <div className="space-y-4">
-                  {formFields.map((field) => (
-                    <Card key={field.id} className="border">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">{field.label}</CardTitle>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant={field.required ? "default" : "secondary"}>
-                              {field.required ? "Required" : "Optional"}
-                            </Badge>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => removeField(field.id)}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="grid gap-4">
-                        <div className="grid gap-2">
-                          <Label>Label</Label>
-                          <Input
-                            value={field.label}
-                            onChange={(e) => updateField(field.id, { label: e.target.value })}
-                          />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label>Name</Label>
-                          <Input
-                            value={field.name}
-                            onChange={(e) => updateField(field.id, { name: e.target.value })}
-                          />
-                        </div>
-                        {field.placeholder && (
-                          <div className="grid gap-2">
-                            <Label>Placeholder</Label>
-                            <Input
-                              value={field.placeholder}
-                              onChange={(e) => updateField(field.id, { placeholder: e.target.value })}
-                            />
-                          </div>
-                        )}
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={field.required}
-                            onCheckedChange={(checked) => updateField(field.id, { required: checked })}
-                          />
-                          <Label>Required</Label>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="preview">
-                <FormPreview
-                  fields={formFields}
-                  formData={formData}
-                  onDataChange={handleFormDataChange}
-                  formName={formName}
-                />
-              </TabsContent>
-
-              <TabsContent value="data">
-                <FormDataPreview formData={formData} fields={formFields} />
-              </TabsContent>
-
-              <TabsContent value="export">
-                <JSPExporter
-                  fields={formFields}
-                  formName={formName}
-                  formData={formData}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="space-y-6">
-        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-t-lg">
-            <CardTitle className="flex items-center space-x-2">
-              <Eye className="h-5 w-5" />
-              <span>Live Preview</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="text-sm text-gray-600 mb-2">
-              Real-time form updates
+            <% } %>
+        </div>
+        
+        <div class="controls">
+            <div class="control-row">
+                <form method="post" style="display: inline;">
+                    <input type="hidden" name="direction" value="up">
+                    <button type="submit" class="control-btn" <%= gameOver ? "disabled" : "" %>>↑</button>
+                </form>
             </div>
-            <div className="text-2xl font-bold text-green-600">
-              {Object.keys(formData).length} / {formFields.length} filled
+            <div class="control-row">
+                <form method="post" style="display: inline;">
+                    <input type="hidden" name="direction" value="left">
+                    <button type="submit" class="control-btn" <%= gameOver ? "disabled" : "" %>>←</button>
+                </form>
+                <form method="post" style="display: inline;">
+                    <input type="hidden" name="direction" value="down">
+                    <button type="submit" class="control-btn" <%= gameOver ? "disabled" : "" %>>↓</button>
+                </form>
+                <form method="post" style="display: inline;">
+                    <input type="hidden" name="direction" value="right">
+                    <button type="submit" class="control-btn" <%= gameOver ? "disabled" : "" %>>→</button>
+                </form>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div
-                className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-300"
-                style={{
-                  width: formFields.length > 0 ? `${(Object.keys(formData).length / formFields.length) * 100}%` : '0%'
-                }}
-              ></div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
-            <CardTitle>Quick Stats</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Total Fields:</span>
-              <Badge variant="outline">{formFields.length}</Badge>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Required Fields:</span>
-              <Badge variant="outline">{formFields.filter(f => f.required).length}</Badge>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Completion Rate:</span>
-              <Badge variant="outline">
-                {formFields.length > 0 ? Math.round((Object.keys(formData).length / formFields.length) * 100) : 0}%
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        </div>
+        
+        <form method="post">
+            <input type="hidden" name="action" value="newGame">
+            <button type="submit" class="new-game-btn">🎮 New Game</button>
+        </form>
+        
+        <div class="instructions">
+            <h3>🎯 How to Play:</h3>
+            <p>• Use the arrow buttons to move tiles</p>
+            <p>• When two tiles with the same number touch, they merge into one</p>
+            <p>• Try to create a tile with the number 2048 to win!</p>
+            <p>• Keep playing for a higher score after reaching 2048</p>
+        </div>
     </div>
-  );
-};
-
-export default FormBuilder;
+    
+    <script>
+        // Add keyboard support
+        document.addEventListener('keydown', function(e) {
+            if (<%= gameOver %>) return;
+            
+            let direction = '';
+            switch(e.key) {
+                case 'ArrowUp':
+                    direction = 'up';
+                    break;
+                case 'ArrowDown':
+                    direction = 'down';
+                    break;
+                case 'ArrowLeft':
+                    direction = 'left';
+                    break;
+                case 'ArrowRight':
+                    direction = 'right';
+                    break;
+                default:
+                    return;
+            }
+            
+            e.preventDefault();
+            
+            // Create and submit form
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.style.display = 'none';
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'direction';
+            input.value = direction;
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        });
+        
+        // Add tile animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const tiles = document.querySelectorAll('.tile');
+            tiles.forEach(tile => {
+                if (tile.textContent.trim() !== '') {
+                    tile.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        tile.style.transform = 'scale(1)';
+                    }, 150);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
 
