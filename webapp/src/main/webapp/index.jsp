@@ -542,7 +542,7 @@
             <p>• Try to create a tile with the number 2048 to win!</p>
             <p>• Keep playing for a higher score after reaching 2048</p>
         </div>
-        <h3 style="color: orange;">Created by Dilip</h3>
+        <h3 style="color: #f9f6f2;">Created by Dilip</h3>
 
     </div>
     
