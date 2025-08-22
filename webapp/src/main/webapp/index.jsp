@@ -1,605 +1,278 @@
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.*" %>
-<%
-    // Game logic variables
-    int[][] board = new int[4][4];
-    int score = 0;
-    boolean gameOver = false;
-    boolean won = false;
-    String message = "";
-    
-    // Get session attributes
-    int[][] sessionBoard = (int[][]) session.getAttribute("board");
-    Integer sessionScore = (Integer) session.getAttribute("score");
-    Boolean sessionGameOver = (Boolean) session.getAttribute("gameOver");
-    Boolean sessionWon = (Boolean) session.getAttribute("won");
-    
-    String action = request.getParameter("action");
-    String direction = request.getParameter("direction");
-    
-    // Initialize new game
-    if ("newGame".equals(action) || sessionBoard == null) {
-        board = new int[4][4];
-        score = 0;
-        gameOver = false;
-        won = false;
-        addRandomTile(board);
-        addRandomTile(board);
-        message = "New game started! Use arrow keys or buttons to move tiles.";
-    } else {
-        // Load existing game state
-        board = sessionBoard;
-        score = sessionScore != null ? sessionScore : 0;
-        gameOver = sessionGameOver != null ? sessionGameOver : false;
-        won = sessionWon != null ? sessionWon : false;
-    }
-    
-    // Process move
-    if (direction != null && !gameOver) {
-        int[][] newBoard = copyBoard(board);
-        int oldScore = score;
-        
-        switch (direction) {
-            case "up":
-                moveUp(newBoard);
-                break;
-            case "down":
-                moveDown(newBoard);
-                break;
-            case "left":
-                moveLeft(newBoard);
-                break;
-            case "right":
-                moveRight(newBoard);
-                break;
-        }
-        
-        // Check if move was valid
-        if (!boardsEqual(board, newBoard)) {
-            board = newBoard;
-            addRandomTile(board);
-            
-            // Check for 2048 tile
-            if (!won && has2048(board)) {
-                won = true;
-                message = "🎉 Congratulations! You reached 2048!";
-            }
-            
-            // Check game over
-            if (isGameOver(board)) {
-                gameOver = true;
-                message = "Game Over! No more moves available.";
-            }
-        }
-    }
-    
-    // Save game state
-    session.setAttribute("board", board);
-    session.setAttribute("score", score);
-    session.setAttribute("gameOver", gameOver);
-    session.setAttribute("won", won);
-    
-    // Helper methods
-    %>
-    
-    <%!
-    private void addRandomTile(int[][] board) {
-        List<int[]> emptyCells = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if (board[i][j] == 0) {
-                    emptyCells.add(new int[]{i, j});
-                }
-            }
-        }
-        
-        if (!emptyCells.isEmpty()) {
-            Random rand = new Random();
-            int[] cell = emptyCells.get(rand.nextInt(emptyCells.size()));
-            board[cell[0]][cell[1]] = rand.nextDouble() < 0.9 ? 2 : 4;
-        }
-    }
-    
-    private int[][] copyBoard(int[][] board) {
-        int[][] copy = new int[4][4];
-        for (int i = 0; i < 4; i++) {
-            System.arraycopy(board[i], 0, copy[i], 0, 4);
-        }
-        return copy;
-    }
-    
-    private boolean boardsEqual(int[][] board1, int[][] board2) {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if (board1[i][j] != board2[i][j]) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    private void moveLeft(int[][] board) {
-        for (int i = 0; i < 4; i++) {
-            int[] row = board[i];
-            int[] newRow = new int[4];
-            int pos = 0;
-            
-            // Move non-zero tiles to the left
-            for (int j = 0; j < 4; j++) {
-                if (row[j] != 0) {
-                    newRow[pos++] = row[j];
-                }
-            }
-            
-            // Merge adjacent equal tiles
-            for (int j = 0; j < 3; j++) {
-                if (newRow[j] != 0 && newRow[j] == newRow[j + 1]) {
-                    newRow[j] *= 2;
-                    newRow[j + 1] = 0;
-                }
-            }
-            
-            // Move merged tiles to the left again
-            int[] finalRow = new int[4];
-            pos = 0;
-            for (int j = 0; j < 4; j++) {
-                if (newRow[j] != 0) {
-                    finalRow[pos++] = newRow[j];
-                }
-            }
-            
-            board[i] = finalRow;
-        }
-    }
-    
-    private void moveRight(int[][] board) {
-        // Reverse, move left, reverse again
-        reverseRows(board);
-        moveLeft(board);
-        reverseRows(board);
-    }
-    
-    private void moveUp(int[][] board) {
-        transpose(board);
-        moveLeft(board);
-        transpose(board);
-    }
-    
-    private void moveDown(int[][] board) {
-        transpose(board);
-        reverseRows(board);
-        moveLeft(board);
-        reverseRows(board);
-        transpose(board);
-    }
-    
-    private void transpose(int[][] board) {
-        for (int i = 0; i < 4; i++) {
-            for (int j = i + 1; j < 4; j++) {
-                int temp = board[i][j];
-                board[i][j] = board[j][i];
-                board[j][i] = temp;
-            }
-        }
-    }
-    
-    private void reverseRows(int[][] board) {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 2; j++) {
-                int temp = board[i][j];
-                board[i][j] = board[i][3 - j];
-                board[i][3 - j] = temp;
-            }
-        }
-    }
-    
-    private boolean has2048(int[][] board) {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if (board[i][j] == 2048) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    private boolean isGameOver(int[][] board) {
-        // Check for empty cells
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if (board[i][j] == 0) {
-                    return false;
-                }
-            }
-        }
-        
-        // Check for possible merges
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                int current = board[i][j];
-                if ((i > 0 && board[i-1][j] == current) ||
-                    (i < 3 && board[i+1][j] == current) ||
-                    (j > 0 && board[i][j-1] == current) ||
-                    (j < 3 && board[i][j+1] == current)) {
-                    return false;
-                }
-            }
-        }
-        
-        return true;
-    }
-    
-    private String getTileColor(int value) {
-        switch (value) {
-            case 2: return "#eee4da";
-            case 4: return "#ede0c8";
-            case 8: return "#f2b179";
-            case 16: return "#f59563";
-            case 32: return "#f67c5f";
-            case 64: return "#f65e3b";
-            case 128: return "#edcf72";
-            case 256: return "#edcc61";
-            case 512: return "#edc850";
-            case 1024: return "#edc53f";
-            case 2048: return "#edc22e";
-            default: return "#3c3a32";
-        }
-    }
-    
-    private String getTextColor(int value) {
-        return value <= 4 ? "#776e65" : "#f9f6f2";
-    }
-    %>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2048 Game</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #faf8ef 0%, #f2e6d9 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .game-container {
-            background: #bbada0;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 500px;
-            width: 100%;
-        }
-        
-        .game-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .game-header h1 {
-            color: #776e65;
-            font-size: 3em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        
-        .score-box {
-            background: #bbada0;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-align: center;
-            min-width: 80px;
-        }
-        
-        .score-box .label {
-            font-size: 0.8em;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-        
-        .score-box .value {
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-        
-        .game-board {
-            background: #bbada0;
-            border-radius: 10px;
-            padding: 10px;
-            position: relative;
-            margin-bottom: 20px;
-        }
-        
-        .board-row {
-            display: flex;
-            margin-bottom: 10px;
-        }
-        
-        .board-row:last-child {
-            margin-bottom: 0;
-        }
-        
-        .tile {
-            width: 80px;
-            height: 80px;
-            background: #cdc1b4;
-            border-radius: 5px;
-            margin-right: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            font-weight: bold;
-            transition: all 0.15s ease-in-out;
-        }
-        
-        .tile:last-child {
-            margin-right: 0;
-        }
-        
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .control-row {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .control-btn {
-            padding: 15px 20px;
-            background: #8f7a66;
-            color: #f9f6f2;
-            border: none;
-            border-radius: 5px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.15s ease-in-out;
-            min-width: 60px;
-        }
-        
-        .control-btn:hover {
-            background: #9f8a76;
-        }
-        
-        .control-btn:active {
-            background: #7f6a56;
-        }
-        
-        .new-game-btn {
-            width: 100%;
-            padding: 15px;
-            background: #f67c5f;
-            color: #f9f6f2;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.15s ease-in-out;
-        }
-        
-        .new-game-btn:hover {
-            background: #f68c6f;
-        }
-        
-        .message {
-            text-align: center;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        
-        .message.success {
-            background: #edf7ed;
-            color: #2e7d32;
-            border: 2px solid #4caf50;
-        }
-        
-        .message.error {
-            background: #fdeaea;
-            color: #c62828;
-            border: 2px solid #f44336;
-        }
-        
-        .message.info {
-            background: #e3f2fd;
-            color: #1565c0;
-            border: 2px solid #2196f3;
-        }
-        
-        .instructions {
-            background: #f9f6f2;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        
-        .instructions h3 {
-            color: #776e65;
-            margin-bottom: 10px;
-        }
-        
-        .instructions p {
-            color: #776e65;
-            line-height: 1.5;
-            margin-bottom: 8px;
-        }
-        
-        @media (max-width: 480px) {
-            .tile {
-                width: 60px;
-                height: 60px;
-                font-size: 1.5em;
-            }
-            
-            .game-header h1 {
-                font-size: 2em;
-            }
-            
-            .control-btn {
-                padding: 12px 15px;
-                font-size: 0.9em;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🎲 Guess the Number (1–100)</title>
+  <style>
+    :root{
+      --bg: #0b1220;
+      --card: #121a2b;
+      --text: #e6eefc;
+      --muted: #9fb0d3;
+      --accent: #7aa2ff;
+      --accent-2: #5cf0c1;
+      --danger: #ff7b7b;
+      --warn: #ffd166;
+      --ok: #7cffb7;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 10% 10%, #0d1730 0%, var(--bg) 55%), linear-gradient(160deg, #0d1530 0%, #0b1220 100%);
+      color:var(--text); display:grid; place-items:center; padding:24px;
+    }
+    .card{
+      width:min(680px, 95vw); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)) , var(--card);
+      border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:28px; position:relative; overflow:hidden;
+    }
+    .title{display:flex; gap:12px; align-items:center; margin:0 0 6px}
+    .title .die{font-size:28px}
+    .subtitle{margin:0; color:var(--muted); font-size:14px}
+
+    .row{display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:18px}
+    input[type=number]{
+      width:160px; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.12);
+      background:#0b1324; color:var(--text); font-size:16px; outline:none; transition:border .2s, transform .05s ease-in-out;
+    }
+    input[type=number]:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(122,162,255,.18)}
+    button{
+      padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,.12); cursor:pointer;
+      background:linear-gradient(180deg, rgba(122,162,255,.2), rgba(122,162,255,.1)); color:var(--text); font-weight:600;
+      transition:transform .05s ease-in-out, opacity .2s, filter .2s;
+    }
+    button:hover{filter:brightness(1.08)}
+    button:active{transform:translateY(1px)}
+    button.secondary{background:linear-gradient(180deg, rgba(159,176,211,.18), rgba(159,176,211,.08))}
+    button.ghost{background:transparent}
+    button:disabled{opacity:.6; cursor:not-allowed}
+
+    .info{margin-top:8px; color:var(--muted); font-size:14px}
+    .feedback{margin-top:16px; font-size:18px; font-weight:700}
+    .feedback.low{color:var(--warn)}
+    .feedback.high{color:var(--warn)}
+    .feedback.correct{color:var(--ok)}
+    .feedback.out{color:var(--danger)}
+
+    .attempts{margin-top:18px}
+    .bar{height:10px; background:#0b1324; border-radius:999px; border:1px solid rgba(255,255,255,.1); overflow:hidden}
+    .bar > div{height:100%; width:0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .35s ease}
+
+    .badges{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .badge{padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); font-size:12px; color:#cfe0ff}
+
+    .range{margin-top:14px; font-size:14px; color:#cfe0ff}
+
+    .history{margin-top:18px; display:grid; grid-template-columns: 1fr; gap:8px}
+    .history-item{display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); color:#dbe7ff}
+    .history-item small{color:var(--muted)}
+
+    .footer{display:flex; justify-content:space-between; align-items:center; margin-top:18px; color:var(--muted); font-size:12px}
+    .kbd{padding:2px 6px; border-radius:6px; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); margin-left:6px}
+
+    /* confetti */
+    .confetti{position:absolute; inset:0; pointer-events:none}
+    .confetti span{position:absolute; width:8px; height:14px; background:var(--accent-2); opacity:0; transform:translateY(-20px) rotate(0deg); border-radius:3px}
+  </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="game-header">
-            <h1>2048</h1>
-        </div>
-        
-        <div class="game-info">
-            <div class="score-box">
-                <div class="label">Score</div>
-                <div class="value"><%= score %></div>
-            </div>
-            <div class="score-box">
-                <div class="label">Best</div>
-                <div class="value">0</div>
-            </div>
-        </div>
-        
-        <% if (!message.isEmpty()) { %>
-        <div class="message <%= won ? "success" : (gameOver ? "error" : "info") %>">
-            <%= message %>
-        </div>
-        <% } %>
-        
-        <div class="game-board">
-            <% for (int i = 0; i < 4; i++) { %>
-            <div class="board-row">
-                <% for (int j = 0; j < 4; j++) { %>
-                <div class="tile" style="background-color: <%= getTileColor(board[i][j]) %>; color: <%= getTextColor(board[i][j]) %>;">
-                    <%= board[i][j] == 0 ? "" : board[i][j] %>
-                </div>
-                <% } %>
-            </div>
-            <% } %>
-        </div>
-        
-        <div class="controls">
-            <div class="control-row">
-                <form method="post" style="display: inline;">
-                    <input type="hidden" name="direction" value="up">
-                    <button type="submit" class="control-btn" <%= gameOver ? "disabled" : "" %>>↑</button>
-                </form>
-            </div>
-            <div class="control-row">
-                <form method="post" style="display: inline;">
-                    <input type="hidden" name="direction" value="left">
-                    <button type="submit" class="control-btn" <%= gameOver ? "disabled" : "" %>>←</button>
-                </form>
-                <form method="post" style="display: inline;">
-                    <input type="hidden" name="direction" value="down">
-                    <button type="submit" class="control-btn" <%= gameOver ? "disabled" : "" %>>↓</button>
-                </form>
-                <form method="post" style="display: inline;">
-                    <input type="hidden" name="direction" value="right">
-                    <button type="submit" class="control-btn" <%= gameOver ? "disabled" : "" %>>→</button>
-                </form>
-            </div>
-        </div>
-        
-        <form method="post">
-            <input type="hidden" name="action" value="newGame">
-            <button type="submit" class="new-game-btn">🎮 New Game</button>
-        </form>
-        
-        <div class="instructions">
-            <h3>🎯 How to Play:</h3>
-            <p>• Use the arrow buttons to move tiles</p>
-            <p>• When two tiles with the same number touch, they merge into one</p>
-            <p>• Try to create a tile with the number 2048 to win!</p>
-            <p>• Keep playing for a higher score after reaching 2048</p>
-        </div>
-        <h3 style="color: #f67c5f;">Created by Dilip</h3>
+  <main class="card" role="main" aria-live="polite">
+    <div class="confetti" aria-hidden="true"></div>
 
+    <h1 class="title"><span class="die">🎲</span> Guess the Number</h1>
+    <p class="subtitle">I'm thinking of a number between <strong>1</strong> and <strong>100</strong>. You have <strong id="maxAttempts">7</strong> attempts. Good luck!</p>
+
+    <div class="row" role="form" aria-label="Guess form">
+      <input id="guessInput" type="number" inputmode="numeric" min="1" max="100" placeholder="Enter your guess…" autocomplete="off" />
+      <button id="guessBtn">Guess</button>
+      <button id="resetBtn" class="secondary" title="Start a new game">Reset</button>
     </div>
-    
-    <script>
-        // Add keyboard support
-        document.addEventListener('keydown', function(e) {
-            if (<%= gameOver %>) return;
-            
-            let direction = '';
-            switch(e.key) {
-                case 'ArrowUp':
-                    direction = 'up';
-                    break;
-                case 'ArrowDown':
-                    direction = 'down';
-                    break;
-                case 'ArrowLeft':
-                    direction = 'left';
-                    break;
-                case 'ArrowRight':
-                    direction = 'right';
-                    break;
-                default:
-                    return;
-            }
-            
-            e.preventDefault();
-            
-            // Create and submit form
-            const form = document.createElement('form');
-            form.method = 'post';
-            form.style.display = 'none';
-            
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'direction';
-            input.value = direction;
-            
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-        });
-        
-        // Add tile animation
-        document.addEventListener('DOMContentLoaded', function() {
-            const tiles = document.querySelectorAll('.tile');
-            tiles.forEach(tile => {
-                if (tile.textContent.trim() !== '') {
-                    tile.style.transform = 'scale(1.1)';
-                    setTimeout(() => {
-                        tile.style.transform = 'scale(1)';
-                    }, 150);
-                }
-            });
-        });
-    </script>
 
+    <div class="info" id="infoText">Tip: Press <span class="kbd">Enter</span> to submit.</div>
+    <div class="attempts">
+      <div class="badges">
+        <span class="badge">Attempts: <strong id="attempts">0</strong>/ <span id="maxAttempts2">7</span></span>
+        <span class="badge">Remaining: <strong id="remaining">7</strong></span>
+        <span class="badge">Best: <strong id="best">—</strong></span>
+      </div>
+      <div class="bar" aria-label="Attempts used progress">
+        <div id="progress"></div>
+      </div>
+    </div>
+
+    <div class="range" id="rangeHint">Current range: <strong id="lowBound">1</strong> – <strong id="highBound">100</strong></div>
+
+    <div id="feedback" class="feedback" aria-live="assertive"></div>
+
+    <section class="history" aria-label="Guess history" id="history"></section>
+
+    <div class="footer">
+      <div>Made with ❤️ • No libraries • Works offline</div>
+      <div>New game: <span class="kbd">R</span></div>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const min = 1;
+      const max = 100;
+      const maxAttempts = 7;
+
+      const input = document.getElementById('guessInput');
+      const guessBtn = document.getElementById('guessBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const feedback = document.getElementById('feedback');
+      const attemptsEl = document.getElementById('attempts');
+      const remainingEl = document.getElementById('remaining');
+      const maxA1 = document.getElementById('maxAttempts');
+      const maxA2 = document.getElementById('maxAttempts2');
+      const progress = document.getElementById('progress');
+      const lowBoundEl = document.getElementById('lowBound');
+      const highBoundEl = document.getElementById('highBound');
+      const rangeHint = document.getElementById('rangeHint');
+      const history = document.getElementById('history');
+      const bestEl = document.getElementById('best');
+      const confettiBox = document.querySelector('.confetti');
+
+      let secret, attempts, lowBound, highBound, over, best = null;
+
+      function rand(min, max){
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function init(newRound = true){
+        secret = rand(min, max);
+        attempts = 0; lowBound = min; highBound = max; over = false;
+        attemptsEl.textContent = attempts;
+        remainingEl.textContent = maxAttempts - attempts;
+        maxA1.textContent = maxAttempts; maxA2.textContent = maxAttempts;
+        feedback.textContent = '';
+        feedback.className = 'feedback';
+        input.value = '';
+        input.disabled = false; guessBtn.disabled = false;
+        updateRange();
+        updateProgress();
+        history.innerHTML = '';
+        info('Tip: Press Enter to submit.');
+      }
+
+      function info(text){
+        document.getElementById('infoText').innerHTML = text;
+      }
+
+      function updateProgress(){
+        const pct = (attempts / maxAttempts) * 100;
+        progress.style.width = pct + '%';
+        remainingEl.textContent = Math.max(0, maxAttempts - attempts);
+        attemptsEl.textContent = attempts;
+      }
+
+      function updateRange(){
+        lowBoundEl.textContent = lowBound;
+        highBoundEl.textContent = highBound;
+      }
+
+      function addHistory(guess, relation){
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        const tag = relation === 0 ? '✅ Correct' : relation < 0 ? '📉 Too low' : '📈 Too high';
+        item.innerHTML = `<div><strong>${guess}</strong> <small>${new Date().toLocaleTimeString()}</small></div><div>${tag}</div>`;
+        history.prepend(item);
+      }
+
+      function celebrate(){
+        confettiBox.innerHTML = '';
+        const bits = 80;
+        const colors = ['#7aa2ff','#5cf0c1','#ffd166','#ff7b7b','#c084fc'];
+        for(let i=0;i<bits;i++){
+          const s = document.createElement('span');
+          s.style.left = Math.random()*100+'%';
+          s.style.background = colors[i%colors.length];
+          s.style.opacity = 1;
+          s.animate([
+            { transform: `translateY(-20px) rotate(0deg)`, opacity: 1 },
+            { transform: `translateY(${400+Math.random()*200}px) rotate(${Math.random()*720-360}deg)`, opacity: 0 }
+          ], { duration: 1200 + Math.random()*800, easing:'cubic-bezier(.2,.7,.2,1)' });
+          confettiBox.appendChild(s);
+        }
+      }
+
+      function endGame(win){
+        over = true; input.disabled = true; guessBtn.disabled = true;
+        if(win){
+          feedback.textContent = `🎉 Correct! You guessed it in ${attempts} ${attempts===1?'attempt':'attempts'}.`;
+          feedback.className = 'feedback correct';
+          if(best === null || attempts < best){ best = attempts; bestEl.textContent = best; }
+          celebrate();
+        } else {
+          feedback.textContent = `😢 Out of attempts! The number was ${secret}.`;
+          feedback.className = 'feedback out';
+        }
+      }
+
+      function handleGuess(){
+        if(over) return;
+        const val = Number(input.value.trim());
+        if(!Number.isInteger(val) || val < min || val > max){
+          feedback.textContent = '❌ Please enter a valid number between 1 and 100.';
+          feedback.className = 'feedback out';
+          input.focus();
+          return;
+        }
+        attempts++;
+        updateProgress();
+        if(val === secret){
+          addHistory(val, 0);
+          endGame(true);
+          return;
+        }
+        if(val < secret){
+          feedback.textContent = '📉 Too low!';
+          feedback.className = 'feedback low';
+          addHistory(val, -1);
+          lowBound = Math.max(lowBound, val + 1);
+          info(`Try a higher number. New range: <strong>${lowBound}</strong> – <strong>${highBound}</strong>.`);
+        } else {
+          feedback.textContent = '📈 Too high!';
+          feedback.className = 'feedback high';
+          addHistory(val, 1);
+          highBound = Math.min(highBound, val - 1);
+          info(`Try a lower number. New range: <strong>${lowBound}</strong> – <strong>${highBound}</strong>.`);
+        }
+        updateRange();
+        input.select();
+        if(attempts >= maxAttempts){ endGame(false); }
+      }
+
+      // Events
+      guessBtn.addEventListener('click', handleGuess);
+      resetBtn.addEventListener('click', () => init(true));
+      input.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter') handleGuess();
+      });
+      window.addEventListener('keydown', (e)=>{
+        if(e.key.toLowerCase() === 'r') init(true);
+      });
+
+      // Persist best score per browser
+      try{
+        const stored = localStorage.getItem('guess-best');
+        if(stored) best = Number(stored);
+      }catch{}
+      const bestObserver = new MutationObserver(()=>{
+        try{ if(best!==null) localStorage.setItem('guess-best', String(best)); }catch{}
+      });
+      bestObserver.observe(document.getElementById('best'), { childList:true });
+      if(best!==null) bestEl.textContent = best;
+
+      // Kick off
+      init(true);
+    })();
+  </script>
 </body>
 </html>
-
